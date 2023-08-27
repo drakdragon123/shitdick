@@ -1,5 +1,6 @@
 package src.frontend;
 
+import shityourdick.for_debug;
 import src.Scope.GlobalScope;
 import src.Scope.Scope;
 import src.myerror.BaseError;
@@ -40,6 +41,7 @@ public class SemanticChecker implements ASTVisitor, SomethingExisting {
   }
 
   public boolean ifmainexist(){
+    for_debug t = new for_debug();t.debug1();
     if(globalScope.getFuncDef("main")==null){
       return false;
     }
@@ -63,6 +65,7 @@ public class SemanticChecker implements ASTVisitor, SomethingExisting {
       var def = node.defList.get(i);
       def.accept(this);
     }
+    for_debug t = new for_debug();t.debug1();
   }
 
 //  public void visit(ProgramNode node) {
