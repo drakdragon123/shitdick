@@ -26,10 +26,10 @@ import src.frontend.*;
 
 public class Compiler {
         public static void main(String[] args) throws Exception {
-                // CharStream input = CharStreams.fromStream(new FileInputStream("input.mx"));
+                 CharStream input = CharStreams.fromStream(new FileInputStream("input.mx"));
                 // PrintStream irOutput = new PrintStream("output.ll");
                 // PrintStream asmOutput = new PrintStream("output.s");
-                CharStream input = CharStreams.fromStream(System.in);
+//                CharStream input = CharStreams.fromStream(System.in);
                 MxLexer lexer = new MxLexer(input);
                 lexer.removeErrorListeners();
                 lexer.addErrorListener(new MxErrorListener());
