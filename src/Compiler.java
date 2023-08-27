@@ -10,10 +10,7 @@ import src.myerror.MxErrorListener;
 import src.util.*;
 import src.ast.*;
 
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.*;
 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
@@ -24,12 +21,39 @@ import src.frontend.*;
 //import middleend.*;
 //import src.backend.*;
 
+//import antlr.*;
+//import assembly.ASMModule;
+//import Utils.*;
+//import AST.*;
+//import IR.IRprogram;
+//
+//import java.io.BufferedWriter;
+//import java.io.FileInputStream;
+//import java.io.FileWriter;
+//import java.io.IOException;
+//
+//import org.antlr.v4.runtime.*;
+//import org.antlr.v4.runtime.tree.*;
+//
+//import front.*;
+//import back.IRBuilder;
+//import back.InstSelector;
+//import back.RegAllocator;
+
 public class Compiler {
+        public static void writeToFile(String fileName, String content) {
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+                        writer.write(content);
+                } catch (IOException e) {
+                        e.printStackTrace();
+                }
+        }
         public static void main(String[] args) throws Exception {
-//                 CharStream input = CharStreams.fromStream(new FileInputStream("input.mx"));
-                // PrintStream irOutput = new PrintStream("output.ll");
-                // PrintStream asmOutput = new PrintStream("output.s");
+
+//        try {
+//            CharStream input = CharStreams.fromStream(new FileInputStream("1.cpp"));
                 CharStream input = CharStreams.fromStream(System.in);
+//
                 MxLexer lexer = new MxLexer(input);
                 lexer.removeErrorListeners();
                 lexer.addErrorListener(new MxErrorListener());
@@ -43,20 +67,21 @@ public class Compiler {
                 GlobalScope globalScope = new GlobalScope();
                 new SymbolCollector(globalScope).visit(ast);
                 new SemanticChecker(globalScope).visit(ast);
-                // AST -> LLVM IR
-                // System.setOut(irOutput);
-                IRProgram irProgram = new IRProgram();
-                new IRBuilder(irProgram, globalScope).visit(ast);
-                // System.out.print(irProgram.toString());
-                // LLVM IR -> ASM
-                // System.setOut(asmOutput);
-                ASMModule asmModule = new ASMModule();
-                new InstSelector(asmModule).visit(irProgram);
-                new RegAllocator(asmModule).work();
 
-                new BuiltinAsmPrinter("builtin.s");
-                FileOutputStream out = new FileOutputStream("output.s");
-                out.write(asmModule.toString().getBytes());
-                out.close();
+                IRProgram irprogram = new IRProgram();
+                new IRBuilder( irprogram,globalScope).visit(ast);
+//            String content1 = irprogram.toString();
+//            writeToFile("1.ll", content1);
+
+                ASMModule asmModule = new ASMModule();
+                new InstSelector(asmModule).visit(irprogram);
+                new RegAllocator(asmModule).work();
+                String content = asmModule.toString();
+//            writeToFile("1.s", content);
+                System.out.print(content);
+//        }
+//        catch (Throwable gb){
+//            System.out.print(gb.toString());
+//        }
         }
 }
