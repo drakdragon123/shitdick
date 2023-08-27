@@ -1029,9 +1029,52 @@ public class IRBuilder implements ASTVisitor, SomethingExisting {
       }
     }
   }
-
   @Override
-  public void visit(TriExprNode node) {} // No need to implement
+  public void visit(TriExprNode node) {
+    node.cond.accept(this);
+    IRBasicBlock trueBlock = new IRBasicBlock(currentFunction, "trueBlock_");
+    IRBasicBlock falseBlock = new IRBasicBlock(currentFunction, "falseBlock_");
+    IRBasicBlock nextBlock = new IRBasicBlock(currentFunction, "ternary.end_");
+    IRType types=typeTrans(node.type,false);
+    if(!types.equals(irVoidType)){
+      node.storePtr = new IRRegister("",new IRPtrType(types));
+      currentBlock.addInst(new IRAllocaInst(currentBlock, types, node.storePtr));
+      IREntity cond = getVal(node.cond);
+      nextBlock.terminalInst = currentBlock.terminalInst;
+      currentBlock.terminalInst = new IRBranchInst(currentBlock, cond, trueBlock, falseBlock);
+      currentBlock.isFinished = true;
+      currentBlock = currentFunction.appendBlock(trueBlock);
+      node.lhs.accept(this);
+      addStore(node.storePtr, node.lhs);
+      currentBlock.terminalInst = new IRJumpInst(currentBlock, nextBlock);
+      currentBlock.isFinished = true;
+      currentBlock = currentFunction.appendBlock(falseBlock);
+      node.rhs.accept(this);
+      addStore(node.storePtr, node.rhs);
+      currentBlock.terminalInst = new IRJumpInst(currentBlock, nextBlock);
+      currentBlock.isFinished = true;
+      currentBlock = currentFunction.appendBlock(nextBlock);
+      node.IRvalue = getVal(node);
+    }
+    else{
+      IREntity cond = getVal(node.cond);
+      nextBlock.terminalInst = currentBlock.terminalInst;
+      currentBlock.terminalInst = new IRBranchInst(currentBlock, cond, trueBlock, falseBlock);
+      currentBlock.isFinished = true;
+      currentBlock = currentFunction.appendBlock(trueBlock);
+      node.lhs.accept(this);
+      currentBlock.terminalInst = new IRJumpInst(currentBlock, nextBlock);
+      currentBlock.isFinished = true;
+      currentBlock = currentFunction.appendBlock(falseBlock);
+      node.rhs.accept(this);
+      currentBlock.terminalInst = new IRJumpInst(currentBlock, nextBlock);
+      currentBlock.isFinished = true;
+      currentBlock = currentFunction.appendBlock(nextBlock);
+      node.IRvalue = null;
+      node.storePtr = null;
+    }
+  }
+
 
 
 }
